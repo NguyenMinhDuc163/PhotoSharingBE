@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/7dc3233d-db5f-4276-9d15-d0cd40fcfc3d/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/photosharingapp1",
+    "appService.deploySubpath": "."
+}
