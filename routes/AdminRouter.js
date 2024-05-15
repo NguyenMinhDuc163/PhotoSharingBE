@@ -2,7 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../db/userModel");
-const admin = require('../auth/firebaseAdmin'); // Import Firebase Admin SDK
+const admin = require('../auth/firebaseAdmin');
+const nodemailer = require("nodemailer"); // Import Firebase Admin SDK
 const router = express.Router();
 
 const JWT_SECRET = 'your-secret-key';
@@ -94,6 +95,71 @@ router.post("/login-google-github", async (req, res) => {
   } catch (error) {
     console.error("Error verifying token or saving user:", error); // Thêm log lỗi ở đây
     res.status(401).send({ error: "Invalid token" });
+  }
+});
+
+// Cấu hình Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'hotrohoctap163@gmail.com', // Tài khoản gmail
+    pass: 'xeoj kklb lcgw kkzd' // Mật khẩu ứng dụng
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  console.log(email);
+  try {
+    const user = await User.findOne({ email });
+    // if (!user) {
+    //   return res.status(400).send({ error: "Email không tồn tại" });
+    // }
+    //
+    // // Tạo mật khẩu mới
+    const newPassword = Math.random().toString(36).slice(-8); // Tạo mật khẩu ngẫu nhiên 8 ký tự
+    // const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    //
+    // // Cập nhật mật khẩu trong cơ sở dữ liệu
+    // await User.updateOne({ _id: user._id }, { password: hashedPassword });
+
+    // Cấu hình nội dung email
+    const mailOptions = {
+      from: 'hotrohoctap163@gmail.com',
+      to: 'ngminhduc1603@gmail.com',
+      subject: 'Thông Báo: Cấp lại Mật Khẩu Mới',
+      text: `Kính gửi quý khách,
+
+      Chúng tôi xin thông báo rằng mật khẩu mới của quý khách đã được cấp lại thành công. 
+      
+      Mật khẩu mới của quý khách là: ${newPassword}
+      
+      Vui lòng đăng nhập và đổi mật khẩu ngay lập tức để đảm bảo an toàn tài khoản.
+      
+      Trân trọng,
+      Đội ngũ hỗ trợ khách hàng
+      Email: hotrohoctap163@gmail.com
+      Điện thoại: 0123456789
+      
+      Lưu ý: Đây là email tự động, vui lòng không trả lời email này.
+`
+    };
+
+
+    // Gửi email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(500).send({ error: "Không thể gửi email" });
+      } else {
+        res.status(200).send({ message: "Mật khẩu mới đã được gửi đến email của bạn" });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: "Lỗi nội bộ" });
   }
 });
 
